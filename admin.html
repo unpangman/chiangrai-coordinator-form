@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="th"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Admin | ผู้ประสานงาน</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,"Noto Sans Thai",sans-serif;background:#f4f6f8}.container{max-width:1200px;margin:40px auto;padding:20px}
+.card{background:#fff;border-radius:15px;padding:25px;box-shadow:0 4px 20px rgba(0,0,0,.06)}input{width:100%;padding:12px;margin-bottom:12px;border:1px solid #ddd;border-radius:8px}
+button{border:0;padding:11px 18px;border-radius:8px;cursor:pointer;background:#2563eb;color:#fff}.logout{background:#dc2626}table{width:100%;border-collapse:collapse;margin-top:20px}
+th,td{padding:11px;border-bottom:1px solid #eee;text-align:left}th{background:#f8fafc}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:15px}
+#adminPanel{display:none}.error{color:#dc2626;margin-top:10px}
+</style></head><body><div class="container">
+<div id="loginBox" class="card"><h2>Admin Login</h2><input id="email" type="email" placeholder="Email"><input id="password" type="password" placeholder="Password">
+<button onclick="login()">เข้าสู่ระบบ</button><div id="loginError" class="error"></div></div>
+<div id="adminPanel" class="card"><div class="toolbar"><div><h2>รายชื่อผู้ประสานงาน</h2><div id="count"></div></div><button class="logout" onclick="logout()">ออกจากระบบ</button></div>
+<div style="overflow-x:auto"><table><thead><tr><th>หน่วยงาน</th><th>ชื่อ-นามสกุล</th><th>ตำแหน่ง</th><th>โทรศัพท์</th><th>LINE</th><th>Email</th><th>วันที่แจ้ง</th></tr></thead><tbody id="data"></tbody></table></div>
+</div></div>
+<script src="config.js"></script><script>
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+async function login(){const {error}=await db.auth.signInWithPassword({email:email.value,password:password.value});if(error){loginError.textContent="Email หรือ Password ไม่ถูกต้อง";return;}showAdmin();}
+async function logout(){await db.auth.signOut();adminPanel.style.display="none";loginBox.style.display="block";}
+async function showAdmin(){loginBox.style.display="none";adminPanel.style.display="block";await loadData();}
+async function loadData(){const {data:rows,error}=await db.from("coordinators").select("*").order("created_at",{ascending:false});if(error){console.error(error);return;}
+count.textContent=`ทั้งหมด ${rows.length} รายการ`;data.innerHTML="";
+rows.forEach(row=>{const tr=document.createElement("tr");[row.department,row.full_name,row.position,row.phone,row.line_id,row.email,new Date(row.created_at).toLocaleString("th-TH")].forEach(v=>{const td=document.createElement("td");td.textContent=v||"-";tr.appendChild(td)});data.appendChild(tr);});}
+(async()=>{const {data:s}=await db.auth.getSession();if(s.session)showAdmin();})();
+</script></body></html>

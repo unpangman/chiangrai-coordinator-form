@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>แจ้งรายชื่อผู้ประสานงาน | เทศบาลนครเชียงราย</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,"Noto Sans Thai",sans-serif;background:#f4f6f8;color:#1f2937}
+.header{background:#fff;border-bottom:1px solid #e5e7eb;padding:18px 20px}.header-inner{max-width:700px;margin:auto;display:flex;justify-content:space-between;align-items:center}
+.header h3{margin:0}.admin-btn{text-decoration:none;background:#111827;color:#fff;padding:9px 15px;border-radius:8px;font-size:14px}
+.container{max-width:700px;margin:40px auto;padding:0 18px}.card{background:#fff;padding:30px;border-radius:16px;box-shadow:0 5px 25px rgba(0,0,0,.06)}
+h1{margin-top:0;font-size:26px}.description{color:#6b7280;margin-bottom:28px}label{display:block;font-weight:600;margin:18px 0 7px}
+input,select,textarea{width:100%;padding:13px;border:1px solid #d1d5db;border-radius:9px;font-size:16px;background:#fff}textarea{min-height:90px}
+button{width:100%;margin-top:25px;padding:14px;border:0;border-radius:9px;background:#2563eb;color:#fff;font-size:17px;font-weight:600;cursor:pointer}
+button:disabled{opacity:.6}.message{margin-top:20px;text-align:center;font-weight:600}
+</style>
+</head>
+<body>
+<header class="header"><div class="header-inner"><h3>เทศบาลนครเชียงราย</h3><a href="admin.html" class="admin-btn">Admin</a></div></header>
+<div class="container"><div class="card">
+<h1>แจ้งรายชื่อผู้ประสานงาน</h1><p class="description">กรุณากรอกข้อมูลผู้ประสานงานของหน่วยงานให้ครบถ้วน</p>
+<form id="form">
+<label>หน่วยงาน *</label><select id="department" required>
+<option value="">-- เลือกหน่วยงาน --</option>
+<option>สำนักปลัดเทศบาล + หน่วยตรวจสอบภายใน</option><option>กองคลัง</option><option>กองช่าง</option>
+<option>กองสาธารณสุขและสิ่งแวดล้อม</option><option>กองยุทธศาสตร์และงบประมาณ</option><option>กองสวัสดิการสังคม</option>
+<option>สำนักการศึกษา</option><option>กองการแพทย์</option><option>กองการเจ้าหน้าที่</option><option>สำนักงานเลขานุการเทศบาล</option>
+<option>โรงเรียนเทศบาล 1 ศรีเกิด</option><option>โรงเรียนเทศบาล 2 หนองบัว</option><option>โรงเรียนเทศบาล 3 ศรีทรายมูล</option>
+<option>โรงเรียนเทศบาล 4 สันป่าก่อ</option><option>โรงเรียนเทศบาล 5 เด่นห้า</option><option>โรงเรียนเทศบาล 6 นครเชียงราย</option>
+<option>โรงเรียนเทศบาล 7 ฝั่งหมิ่น</option><option>โรงเรียนเทศบาล 8 บ้านใหม่</option><option>ศูนย์พัฒนาเด็กเล็กบ้านใหม่</option>
+<option>สถานธนานุบาลเทศบาลนครเชียงราย</option>
+</select>
+<label>ชื่อ-นามสกุล *</label><input id="full_name" required>
+<label>ตำแหน่ง</label><input id="position">
+<label>เบอร์โทรศัพท์ *</label><input id="phone" type="tel" inputmode="tel" required>
+<label>LINE ID</label><input id="line_id">
+<label>Email</label><input id="email" type="email">
+<label>หมายเหตุ</label><textarea id="note"></textarea>
+<button id="submitBtn" type="submit">บันทึกข้อมูล</button><div id="message" class="message"></div>
+</form></div></div>
+<script src="config.js"></script>
+<script>
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+const form=document.getElementById("form"),message=document.getElementById("message"),submitBtn=document.getElementById("submitBtn");
+form.addEventListener("submit",async e=>{
+ e.preventDefault(); submitBtn.disabled=true;submitBtn.textContent="กำลังบันทึก...";message.textContent="";
+ const data={department:department.value,full_name:full_name.value.trim(),position:position.value.trim(),phone:phone.value.trim(),line_id:line_id.value.trim(),email:email.value.trim(),note:note.value.trim()};
+ const {error}=await db.from("coordinators").insert([data]);
+ if(error){console.error(error);message.style.color="#dc2626";message.textContent="เกิดข้อผิดพลาด กรุณาลองใหม่";}
+ else{message.style.color="#059669";message.textContent="✓ บันทึกข้อมูลเรียบร้อยแล้ว";form.reset();}
+ submitBtn.disabled=false;submitBtn.textContent="บันทึกข้อมูล";
+});
+</script></body></html>
