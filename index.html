@@ -46,7 +46,7 @@ form.addEventListener("submit",async e=>{
  e.preventDefault(); submitBtn.disabled=true;submitBtn.textContent="กำลังบันทึก...";message.textContent="";
  const data={department:department.value,full_name:full_name.value.trim(),position:position.value.trim(),phone:phone.value.trim(),line_id:line_id.value.trim(),email:email.value.trim(),note:note.value.trim()};
  const {error}=await db.from("coordinators").insert([data]);
- if(error){console.error(error);message.style.color="#dc2626";message.textContent="เกิดข้อผิดพลาด กรุณาลองใหม่";}
+ if(error){console.error("Supabase insert error:",error);message.style.color="#dc2626";message.textContent=`บันทึกไม่สำเร็จ: ${error.message || "Unknown error"}${error.code ? " ("+error.code+")" : ""}`;}
  else{message.style.color="#059669";message.textContent="✓ บันทึกข้อมูลเรียบร้อยแล้ว";form.reset();}
  submitBtn.disabled=false;submitBtn.textContent="บันทึกข้อมูล";
 });
