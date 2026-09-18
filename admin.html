@@ -20,7 +20,7 @@
 <div id="loginError" class="error"></div>
 </div>
 <div id="adminPanel" class="card">
-<div class="toolbar"><div><h2>รายชื่อผู้ประสานงาน</h2><div id="count"></div></div><button class="logout" id="logoutBtn">ออกจากระบบ</button></div>
+<div class="toolbar"><div><h2>รายชื่อผู้ประสานงาน</h2><div id="count"></div></div><div><button id="printBtn">พิมพ์รายงาน</button> <button class="logout" id="logoutBtn">ออกจากระบบ</button></div></div>
 <div style="overflow-x:auto"><table><thead><tr><th>หน่วยงาน</th><th>ชื่อ-นามสกุล</th><th>ตำแหน่ง</th><th>โทรศัพท์</th><th>LINE</th><th>Email</th><th>วันที่แจ้ง</th></tr></thead><tbody id="dataBody"></tbody></table></div>
 </div>
 </div>
@@ -33,7 +33,7 @@ function login(){if(passwordInput.value!==ADMIN_PIN){loginError.textContent="ร
 function logout(){sessionStorage.removeItem("coordinator_admin");adminPanel.style.display="none";loginBox.style.display="block";passwordInput.value="";}
 async function showAdmin(){loginBox.style.display="none";adminPanel.style.display="block";await loadData();}
 async function loadData(){const {data:rows,error}=await db.from("coordinators").select("*").order("created_at",{ascending:false});if(error){console.error(error);countEl.textContent="ไม่สามารถโหลดข้อมูลได้: ตรวจสอบ RLS policy ของ Supabase";return;}countEl.textContent=`ทั้งหมด ${rows.length} รายการ`;dataBody.innerHTML="";rows.forEach(row=>{const tr=document.createElement("tr");[row.department,row.full_name,row.position,row.phone,row.line_id,row.email,new Date(row.created_at).toLocaleString("th-TH")].forEach(v=>{const td=document.createElement("td");td.textContent=v||"-";tr.appendChild(td)});dataBody.appendChild(tr);});}
-document.getElementById("loginBtn").addEventListener("click",login);document.getElementById("logoutBtn").addEventListener("click",logout);passwordInput.addEventListener("keydown",e=>{if(e.key==="Enter")login();});if(sessionStorage.getItem("coordinator_admin")==="1")showAdmin();
+document.getElementById("loginBtn").addEventListener("click",login);document.getElementById("logoutBtn").addEventListener("click",logout);document.getElementById("printBtn").addEventListener("click",()=>window.print());passwordInput.addEventListener("keydown",e=>{if(e.key==="Enter")login();});if(sessionStorage.getItem("coordinator_admin")==="1")showAdmin();
 </script>
 </body>
 </html>
