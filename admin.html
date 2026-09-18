@@ -6,82 +6,33 @@
 <title>Admin | ผู้ประสานงาน</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:system-ui,"Noto Sans Thai",sans-serif;background:#f4f6f8;color:#1f2937}.container{max-width:1200px;margin:40px auto;padding:20px}.card{background:#fff;border-radius:15px;padding:25px;box-shadow:0 4px 20px rgba(0,0,0,.06)}#loginBox{max-width:430px;margin:70px auto}h2{margin-top:0}input{width:100%;padding:13px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:8px;font-size:16px}button{border:0;padding:11px 18px;border-radius:8px;cursor:pointer;background:#2563eb;color:#fff;font-size:15px}.login-btn{width:100%;font-weight:600}.login-btn:disabled{opacity:.6;cursor:not-allowed}.logout{background:#dc2626}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{padding:11px;border-bottom:1px solid #eee;text-align:left;white-space:nowrap}th{background:#f8fafc}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:15px}#adminPanel{display:none}.error{color:#dc2626;margin-top:10px}.hint{color:#6b7280;margin-bottom:20px}.user{font-size:13px;color:#6b7280;margin-top:4px}.loading{color:#6b7280;padding:18px 0}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,"Noto Sans Thai",sans-serif;background:#f4f6f8;color:#1f2937}.container{max-width:1200px;margin:40px auto;padding:20px}.card{background:#fff;border-radius:15px;padding:25px;box-shadow:0 4px 20px rgba(0,0,0,.06)}#loginBox{max-width:420px;margin:80px auto}input{width:100%;padding:13px;margin-bottom:12px;border:1px solid #d1d5db;border-radius:8px;font-size:16px}button{border:0;padding:11px 18px;border-radius:8px;cursor:pointer;background:#2563eb;color:#fff;font-size:15px}.login-btn{width:100%}.logout{background:#dc2626}table{width:100%;border-collapse:collapse;margin-top:20px}th,td{padding:11px;border-bottom:1px solid #eee;text-align:left}th{background:#f8fafc}.toolbar{display:flex;justify-content:space-between;align-items:center;gap:15px}#adminPanel{display:none}.error{color:#dc2626;margin-top:10px}.hint{color:#6b7280;margin-bottom:20px}
 </style>
 </head>
 <body>
 <div class="container">
 <div id="loginBox" class="card">
-<h2>เข้าสู่ระบบผู้ดูแล</h2>
-<p class="hint">ใช้ Email และ Password ของ Admin ที่สร้างไว้ใน Supabase Authentication</p>
-<input id="emailInput" type="email" placeholder="Email" autocomplete="username">
-<input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password">
+<h2>Admin Login</h2>
+<p class="hint">กรอกรหัสผ่านผู้ดูแลระบบ</p>
+<input id="password" type="password" inputmode="numeric" placeholder="รหัสผ่าน" autocomplete="off">
 <button class="login-btn" id="loginBtn">เข้าสู่ระบบ</button>
 <div id="loginError" class="error"></div>
 </div>
 <div id="adminPanel" class="card">
-<div class="toolbar"><div><h2>รายชื่อผู้ประสานงาน</h2><div id="count"></div><div id="currentUser" class="user"></div></div><button class="logout" id="logoutBtn">ออกจากระบบ</button></div>
-<div id="loadMessage" class="loading"></div>
+<div class="toolbar"><div><h2>รายชื่อผู้ประสานงาน</h2><div id="count"></div></div><button class="logout" id="logoutBtn">ออกจากระบบ</button></div>
 <div style="overflow-x:auto"><table><thead><tr><th>หน่วยงาน</th><th>ชื่อ-นามสกุล</th><th>ตำแหน่ง</th><th>โทรศัพท์</th><th>LINE</th><th>Email</th><th>วันที่แจ้ง</th></tr></thead><tbody id="dataBody"></tbody></table></div>
 </div>
 </div>
 <script src="config.js"></script>
 <script>
+const ADMIN_PIN="2905";
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
-const loginBox=document.getElementById("loginBox");
-const adminPanel=document.getElementById("adminPanel");
-const emailInput=document.getElementById("emailInput");
-const passwordInput=document.getElementById("passwordInput");
-const loginBtn=document.getElementById("loginBtn");
-const loginError=document.getElementById("loginError");
-const logoutBtn=document.getElementById("logoutBtn");
-const countEl=document.getElementById("count");
-const currentUser=document.getElementById("currentUser");
-const loadMessage=document.getElementById("loadMessage");
-const dataBody=document.getElementById("dataBody");
-
-async function login(){
- const email=emailInput.value.trim();
- const password=passwordInput.value;
- loginError.textContent="";
- if(!email||!password){loginError.textContent="กรุณากรอก Email และ Password";return;}
- loginBtn.disabled=true;loginBtn.textContent="กำลังเข้าสู่ระบบ...";
- const {data,error}=await db.auth.signInWithPassword({email,password});
- loginBtn.disabled=false;loginBtn.textContent="เข้าสู่ระบบ";
- if(error){console.error(error);loginError.textContent="เข้าสู่ระบบไม่สำเร็จ กรุณาตรวจสอบ Email / Password และสถานะผู้ใช้ใน Supabase";return;}
- passwordInput.value="";
- await showAdmin(data.user);
-}
-
-async function logout(){
- await db.auth.signOut();
- dataBody.innerHTML="";countEl.textContent="";currentUser.textContent="";loadMessage.textContent="";
- adminPanel.style.display="none";loginBox.style.display="block";
-}
-
-async function showAdmin(user){
- loginBox.style.display="none";adminPanel.style.display="block";
- currentUser.textContent=user?.email?`เข้าสู่ระบบ: ${user.email}`:"";
- await loadData();
-}
-
-async function loadData(){
- loadMessage.textContent="กำลังโหลดข้อมูล...";countEl.textContent="";dataBody.innerHTML="";
- const {data:rows,error}=await db.from("coordinators").select("*").order("created_at",{ascending:false});
- if(error){console.error(error);loadMessage.textContent="ไม่สามารถโหลดข้อมูลได้ กรุณาตรวจสอบ RLS policy ว่า authenticated สามารถ SELECT ตาราง coordinators ได้";return;}
- loadMessage.textContent="";countEl.textContent=`ทั้งหมด ${rows.length} รายการ`;
- rows.forEach(row=>{const tr=document.createElement("tr");[row.department,row.full_name,row.position,row.phone,row.line_id,row.email,new Date(row.created_at).toLocaleString("th-TH")].forEach(v=>{const td=document.createElement("td");td.textContent=v||"-";tr.appendChild(td)});dataBody.appendChild(tr);});
-}
-
-loginBtn.addEventListener("click",login);
-logoutBtn.addEventListener("click",logout);
-passwordInput.addEventListener("keydown",e=>{if(e.key==="Enter")login();});
-
-(async()=>{
- const {data:{session},error}=await db.auth.getSession();
- if(error){console.error(error);return;}
- if(session?.user)await showAdmin(session.user);
-})();
+const loginBox=document.getElementById("loginBox"),adminPanel=document.getElementById("adminPanel"),passwordInput=document.getElementById("password"),loginError=document.getElementById("loginError"),countEl=document.getElementById("count"),dataBody=document.getElementById("dataBody");
+function login(){if(passwordInput.value!==ADMIN_PIN){loginError.textContent="รหัสผ่านไม่ถูกต้อง";passwordInput.select();return;}sessionStorage.setItem("coordinator_admin","1");loginError.textContent="";showAdmin();}
+function logout(){sessionStorage.removeItem("coordinator_admin");adminPanel.style.display="none";loginBox.style.display="block";passwordInput.value="";}
+async function showAdmin(){loginBox.style.display="none";adminPanel.style.display="block";await loadData();}
+async function loadData(){const {data:rows,error}=await db.from("coordinators").select("*").order("created_at",{ascending:false});if(error){console.error(error);countEl.textContent="ไม่สามารถโหลดข้อมูลได้: ตรวจสอบ RLS policy ของ Supabase";return;}countEl.textContent=`ทั้งหมด ${rows.length} รายการ`;dataBody.innerHTML="";rows.forEach(row=>{const tr=document.createElement("tr");[row.department,row.full_name,row.position,row.phone,row.line_id,row.email,new Date(row.created_at).toLocaleString("th-TH")].forEach(v=>{const td=document.createElement("td");td.textContent=v||"-";tr.appendChild(td)});dataBody.appendChild(tr);});}
+document.getElementById("loginBtn").addEventListener("click",login);document.getElementById("logoutBtn").addEventListener("click",logout);passwordInput.addEventListener("keydown",e=>{if(e.key==="Enter")login();});if(sessionStorage.getItem("coordinator_admin")==="1")showAdmin();
 </script>
 </body>
 </html>
